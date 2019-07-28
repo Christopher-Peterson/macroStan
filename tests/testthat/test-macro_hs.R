@@ -1,4 +1,5 @@
-hs_test_code = readLines("../../inst/stan_scaffolds/macro_hs.stan")
+wd = "../.."
+hs_test_code = readLines(file.path(wd, "inst/stan_scaffolds/macro_hs.stan"))
 
 test_that("simple horseshoe model is syntactically correct", {
   expect_type(parse_stan_macros(

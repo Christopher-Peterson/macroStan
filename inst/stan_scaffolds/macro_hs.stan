@@ -17,7 +17,7 @@ parameters {
   $ hs_betas$parms
 }
 transformed parameters {
-  $ hs_betas$tparms
+  $ hs_betas$tp1
 }
 model {
   vector[N] eta = alpha + x * {{ hs_betas$coef }} ;

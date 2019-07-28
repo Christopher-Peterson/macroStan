@@ -23,7 +23,7 @@ stan_macro_horseshoe = define_stan_macro(
   real<lower=0> hs_df_slab_{{name}};  // slab degrees of freedom
   real<lower=0> hs_scale_global_{{name}};  // global prior scale
   real<lower=0> hs_scale_slab_{{name}};  // slab prior scale",
-  parms = "  // horseshoe shrinkage parameters, global
+  parameters = "  // horseshoe shrinkage parameters, global
   real<lower=0> hs_global_{{name}}[2];  // global shrinkage parameters
   real<lower=0> hs_c2_{{name}};  // slab regularization parameter
   // local parameters for horseshoe
@@ -39,9 +39,9 @@ stan_macro_horseshoe = define_stan_macro(
             std_normal_lpdf(hs_local_{{name}}[1]) -  {{N_local}} * log(0.5) +
             inv_gamma_lpdf(hs_local_{{name}}[2] |
                0.5 * hs_df_{{name}}, 0.5 * hs_df_{{name}});",
-  coefs = "b_{{name}}",
+  coef = "b_{{name}}",
   # WHAT IS ncoef?????
-  tparms = glue_args(" // horseshoe regression coefs
+  transformed_parameters_1 = glue_args(" // horseshoe regression coefs
   vector[{{N_local}}] b_{{name}} = horseshoe({{hs_args}});",
      N_local = "{{N_local}}", name = "{{name}}",
      hs_args = paste("hs_z_{{name}}, hs_local_{{name}}",

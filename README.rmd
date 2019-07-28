@@ -1,0 +1,92 @@
+---
+title: "macroStan"
+output:
+  github_document: default
+---
+
+```{r setup, echo=FALSE, cache = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+wd = "."
+knitr::read_chunk(file.path(wd, "R/macro_ncp.R"), labels = "npc_macro", from = 2) # skip roxygen tags
+knitr::read_chunk(file.path(wd, "R/macro_hs.R"), labels = "hs_macro", from = 8) # skip roxygen tags
+
+
+input_file = file.path(wd, "inst/stan_scaffolds/macro_ncp.stan")
+input_file_hs = file.path(wd, "inst/stan_scaffolds/macro_hs.stan")
+knitr::read_chunk(input_file, label = "npc_scaffold")
+knitr::read_chunk(input_file_hs, label = "hs_scaffold")
+
+
+library(macroStan)
+
+```
+
+R package for defining text macros in Stan for flexible code reuse.
+
+macroStan provides a method to define reuseable, parameterized chunks of code and insert them into the appropriate locations of a stan file.  The package was inspired by (and uses) the `glue` package.
+
+## Example: Non-centered parameterization
+
+As a simple example, we'll define a macro for the non-centered parameterization of a hierarchical parameter.  
+
+```{r npc_macro, echo=TRUE, eval = FALSE}
+```
+
+This defines a macro with the arguments `name`, `mu`, `sd`, and `size`. The macro contains a number of sections (`coef`, `parms`, `tp1`, `prior`), which contain snippets of stan code.  The macro's arguments are referenced in the sections with double curly braces. 
+Let's use this macro to setup a hierarchical intercept with specific parameters:
+
+```{r echo=TRUE, eval = TRUE}
+alpha_ncp = stan_macro_ncp(name = "alpha", mu = "mu", sd = "tau", size = "N_groups")
+```
+
+Now the parameters snippet (`alpha_ncp$parm`) is:
+
+```{r, echo = FALSE} 
+cat(alpha_ncp$parm)
+``` 
+
+Once a macro has been defined, a stan model can be written to use it
+
+```{stan npc_scaffold, echo = TRUE, output.var = "junk", eval = FALSE}
+```
+
+There are two ways of inserting macros into a stan file: whole line replacement, which begins with a `$`, and in-line replacement, which uses the same `{{ }}` as the macro definitions.  To put them together, use `parse_stan_macros`.
+
+```{r, echo = TRUE, eval = TRUE, results = 'hide', message=FALSE} 
+output_file = tempfile(fileext = ".stan")
+# input_file corresponds to the above stan model
+parse_stan_macros(input = input_file, out_file = output_file,
+                  alpha_ncp = alpha_ncp)
+```
+
+Which produces the following stan file:
+```{r, echo = FALSE, eval = TRUE}
+knitr::read_chunk(output_file, label = "ncp_out")
+
+```
+```{stan ncp_out, echo = TRUE, output.var = "junk2", eval = FALSE}
+```
+
+## Example 2: Horseshoe priors
+
+This adapts the horseshoe prior used in `brms`.
+
+```{r hs_macro, echo = TRUE, eval = TRUE}
+```
+
+`input_file_hs:`
+```{stan hs_scaffold, echo = TRUE, output.var = "junk3", eval = FALSE}
+```
+
+```{r, echo = TRUE, eval = TRUE, results = 'hide', message=FALSE}
+output_file_hs = tempfile(fileext = ".stan")
+parse_stan_macros(input_file_hs, output_file_hs, 
+                  hs_betas = stan_macro_horseshoe("1", "D"))
+```
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::read_chunk(output_file_hs, label = "hs_out")
+
+```
+```{stan hs_out, echo = TRUE, output.var = "junk4", eval = FALSE}
+```

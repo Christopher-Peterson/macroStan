@@ -1,7 +1,7 @@
 // Simple non-central parameterization example
 // Required macros:
   // alpha_ncp (stan_macro_ncp)
-data{
+data {
   int N;
   int N_groups;
   int<lower=1,upper=N_groups> group[N];

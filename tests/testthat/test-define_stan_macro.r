@@ -38,3 +38,32 @@ test_that("define_stan_macro's function produces valid output", {
   expect_false(any(grepl("{", unlist(sm(a = "tst")), fixed = TRUE)))
   expect_false(any(grepl("}", unlist(sm(a = "tst")), fixed = TRUE)))
 })
+
+
+test_fun = structure(function(a, b, ...) {
+  glue("{a}, {b}")
+}, class = c("stan_macro", "function"))
+wrap_fun = wrap_quote(test_fun)
+
+test_that("test wrap_quote", {
+  expect_equal(wrap_fun(a = zed[1], b = pm), test_fun("zed[1]","pm"))
+})
+
+test_that("quote_macros works", {
+  the_list = list(a = test_fun, b = "three",
+                  c = structure(identity, class = c("stan_macro", "function")))
+  quoted_list = quote_macros(the_list)
+  expect_equal(glue_data(quoted_list, "{a(one, two)}, and {b} makes {c(six)}"),
+               "one, two, and three makes six")
+})
+
+test_that("glue_args can handle quoting", {
+  txt = "{func(alpha2, bogon)}"
+  expect_error( # not quoted
+    glue_args(what = txt, func =  test_fun))
+  expect_equal(
+    glue_args(what = txt, func = test_fun, .quote = TRUE),
+    "alpha2, bogon")
+})
+
+

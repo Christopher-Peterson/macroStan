@@ -43,43 +43,44 @@ test_that("get_input_code can format code as a character vector",{
 #### define line macro wrap code ####
 wlm_code = {get_input_code(
 "data {
-  $basic_data
+  $data
 }
 parameters {
-  vector[${N_pars}$] ${theta_name}$;
+  vector[${N_pars}$] ${coef}$;
 }
 model{
   $priors
   target += ${likelihood(
-             alpha, 'theta[2]')}$;
+             theta[1], theta[2])}$;
 }")}
 ### Line macro wrapping: ####
 wlm_out = wrap_line_macros(wlm_code)
 test_that("wrap_line_macros works", {
-  expect_equal(wlm_out[2], "${basic_data}$")
+  expect_equal(wlm_out[2], "${data}$")
   expect_equal(wlm_out[5], wlm_code[5]) # doesn't replace already wrapped stuff
 })
 ### parse_stan_macros ####
 test_macro_list = list(
-  basic_data =
+  data =
   "int N;
    int Y[N];
    vector[N] x;",
+  coef = "theta",
   N_pars = "2",
-  theta_name = "theta",
   priors = "theta ~ normal(0, [3, 2]');")
-likelihood_fun = function(alpha = "theta[1]", beta = "theta[2]") {
-  glue::glue("bernoulli_logit_lpmf(Y|{alpha} + {beta} * x)")}
+likelihood_fun = structure(function(alpha = "theta[1]", beta = "theta[2]") {
+  glue::glue("bernoulli_logit_lpmf(Y|{alpha} + {beta} * x)")},
+  class = c("stan_macro", "function"))
+
+# can generate
+# For these tests, we should define a macro, otherwise this won't work
+
 
 test_that("parse_stan_macros can generate valid stan code",{
   # This should fail because alpha isn't defined
-  expect_error(parse_stan_macros(wlm_code, NA,
-                 .macro_list = test_macro_list,
-                 likelihood = likelihood_fun))
-# It should return a character vector
+  # It should return a character vector
   expect_type(parse_stan_macros(wlm_code, NA,
                  .macro_list = test_macro_list,
-                  alpha = "theta[1]",
                   likelihood = likelihood_fun), "character")
 })
 test_out_file = tempfile(fileext = ".stan")

@@ -6,12 +6,13 @@
 #' @param .macro_symbol character identifying the beginning of a macro
 #' @param .glue_control named list of arguments to glue, includeing .open and .close
 #' @param .macro_list a list of arguments to be used for glue's string interpolation
+#' @param .quote_args logical; if true, macro calls in the stan file will have arguments quoted instead of evaluated
 #' @return the parsed stan code (invisibly if `out_file = NA`)
 #' @export
 parse_stan_macros = function(input, out_file = NA, ...,
                              .macro_symbol = "$",
                              .macro_list = list(),
-                             .glue_control = list()) {
+                             .glue_control = list(), .quote_args = TRUE) {
   # Determine glue open and close
   .glue_control = set_open_close(.glue_control, .macro_symbol)
   # read in file, replace line macros with wrapped macros
@@ -19,8 +20,9 @@ parse_stan_macros = function(input, out_file = NA, ...,
   wrapped_code = wrap_line_macros(input_code, .macro_symbol, .glue_control)
   # re-collapse the code into a length 1
   col_code = glue::glue_collapse(wrapped_code, sep = "\n")
+  # browser()
   out_code = glue_args(col_code, args = .macro_list,
-                       control = .glue_control, ...)
+                       control = .glue_control, ..., .quote = .quote_args)
 
   # Write out file, if possible
   if(!is.na(out_file)) {
@@ -28,7 +30,7 @@ parse_stan_macros = function(input, out_file = NA, ...,
     ret = invisible
   } else ret = return
   # Check to see if the final code is valid
-  tmp = rstan::stanc(model_code = out_code)
+  rstan::stanc(model_code = out_code)
   ret(out_code)
 }
 

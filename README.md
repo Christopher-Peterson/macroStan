@@ -118,7 +118,8 @@ target += std_normal_lpdf(alpha_z);
 
 ## Example 2: Horseshoe priors
 
-This adapts the horseshoe prior used in `brms`.
+Stan macros are intended for more complex code. As an example, here is
+an adapted version of the horseshoe prior used in `brms`.
 
 ``` r
 stan_macro_horseshoe = define_stan_macro(
@@ -202,6 +203,8 @@ output_file_hs = tempfile(fileext = ".stan")
 parse_stan_macros(input_file_hs, output_file_hs, 
                   hs_betas = stan_macro_horseshoe("1", "D"))
 ```
+
+Output:
 
 ``` stan
 // Horseshoe prior example

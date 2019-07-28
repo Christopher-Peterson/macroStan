@@ -69,7 +69,7 @@ knitr::read_chunk(output_file, label = "ncp_out")
 
 ## Example 2: Horseshoe priors
 
-This adapts the horseshoe prior used in `brms`.
+Stan macros are intended for more complex code.  As an example, here is an adapted version of the horseshoe prior used in `brms`.
 
 ```{r hs_macro, echo = TRUE, eval = TRUE}
 ```
@@ -84,6 +84,7 @@ parse_stan_macros(input_file_hs, output_file_hs,
                   hs_betas = stan_macro_horseshoe("1", "D"))
 ```
 
+Output:
 ```{r, echo = FALSE, eval = TRUE}
 knitr::read_chunk(output_file_hs, label = "hs_out")
 

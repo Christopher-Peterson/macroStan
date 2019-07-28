@@ -4,7 +4,8 @@
 #' @param .glue_control named list of control args for glue
 #' @return a function that with arguments .section, ..., and whatever is in .args
 #' @export
-define_stan_macro = function(.args = alist(), ..., .glue_control = list()) {
+define_stan_macro = function(.args = alist(), ...,
+                             .glue_control = list(.open = "{{", .close = "}}")) {
   sections = list(...)
   sec_names = force(c(".all", force(names(sections))))
   .args_full = c(.args, alist(...=, .section = sec_names))
@@ -28,12 +29,10 @@ define_stan_macro = function(.args = alist(), ..., .glue_control = list()) {
   class(out_fun) = c("stan_macro", "function")
   out_fun
 }
-
-#' alternate paramterization for glue_data, easier to lapply with
-# glue_args = function(what, args = list(), control = list(), ...) {
-#   the_args = c(list(.x = c(args, list(...)), what), control)
-#   do.call(glue_data, the_args)
-# }
+#' returns logical
+is_stan_macro = function(x) {
+  "stan_macro" %in% class(x) && rlang::is_function(x)
+}
 
 # takes a function, wraps it in another function that quotes its args and converts them to characters
 wrap_quote = function(.f) {
@@ -43,9 +42,7 @@ wrap_quote = function(.f) {
     do.call(.f, char_args)
   }
 }
-is_stan_macro = function(x) {
-  "stan_macro" %in% class(x) && rlang::is_function(x)
-}
+
 # when called on a list of arguments, it makes sure any macros will automatically quote arguments
 quote_macros = function(arg_list) {
   arg_names = names(arg_list)
@@ -54,9 +51,17 @@ quote_macros = function(arg_list) {
   setNames(arg_list, arg_names)
 }
 
-#' alternate paramterization for glue_data, easier to lapply with
-glue_args = function(what, args = list(), control = list(), ...,
+#' alternate paramterization for `glue_data`, easier to lapply with
+#' @param what scalar character string to `glue_data`
+#' @param args a list of data for `glue_data`
+#' @param control a named list of control arguments for `glue_data`
+#' @param ... additional data to be combined with `args`
+#' @param .quote logical, indicating whether `stan_macros` in `what` should quote their arguments
+#' @export
+glue_args = function(what, args = list(),
+                     control = list(.open = "{{", .close = "}}"), ...,
                      .quote = FALSE) {
+  # browser()
   .x = c(args, list(...))
   if(isTRUE(.quote)) {
     .x = quote_macros(.x)

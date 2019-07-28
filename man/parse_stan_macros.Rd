@@ -5,7 +5,7 @@
 \title{parse_stan_macros: read in a stan file and replace macros}
 \usage{
 parse_stan_macros(input, out_file = NA, ..., .macro_symbol = "$",
-  .macro_list = list(), .glue_control = list())
+  .macro_list = list(), .glue_control = list(), .quote_args = TRUE)
 }
 \arguments{
 \item{input}{either a file name or a the text of a stan file}
@@ -19,6 +19,8 @@ parse_stan_macros(input, out_file = NA, ..., .macro_symbol = "$",
 \item{.macro_list}{a list of arguments to be used for glue's string interpolation}
 
 \item{.glue_control}{named list of arguments to glue, includeing .open and .close}
+
+\item{.quote_args}{logical; if true, macro calls in the stan file will have arguments quoted instead of evaluated}
 }
 \value{
 the parsed stan code (invisibly if `out_file = NA`)

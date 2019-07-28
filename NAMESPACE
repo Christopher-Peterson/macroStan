@@ -3,6 +3,7 @@
 S3method(print,stan_macro)
 S3method(summary,stan_macro)
 export(define_stan_macro)
+export(glue_args)
 export(parse_stan_macros)
 export(stan_macro_horseshoe)
 export(stan_macro_ncp)

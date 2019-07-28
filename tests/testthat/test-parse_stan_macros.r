@@ -1,12 +1,12 @@
 ### glue delimiter tests ####
 test_that("fix_demimiter works", {
-  expect_equal(fix_delimiter(NULL, "$"), "${")
-  expect_equal(fix_delimiter(NULL, "$", "}"), "}$")
+  expect_equal(fix_delimiter(NULL, ), "{{")
+  expect_equal(fix_delimiter(NULL, "}}"), "}}")
 })
 
 test_that("set_open_close works", {
   expect_equal(set_open_close(list(), "$"),
-               list(.open = "${", .close = "}$"))
+               list(.open = "{{", .close = "}}"))
 })
 
 ### Create a dummy stan file ####
@@ -46,17 +46,17 @@ wlm_code = {get_input_code(
   $data
 }
 parameters {
-  vector[${N_pars}$] ${coef}$;
+  vector[{{N_pars}}] {{coef}};
 }
 model{
   $priors
-  target += ${likelihood(
-             theta[1], theta[2])}$;
+  target += {{likelihood(
+             theta[1], theta[2])}};
 }")}
 ### Line macro wrapping: ####
 wlm_out = wrap_line_macros(wlm_code)
 test_that("wrap_line_macros works", {
-  expect_equal(wlm_out[2], "${data}$")
+  expect_equal(wlm_out[2], "{{data}}")
   expect_equal(wlm_out[5], wlm_code[5]) # doesn't replace already wrapped stuff
 })
 ### parse_stan_macros ####

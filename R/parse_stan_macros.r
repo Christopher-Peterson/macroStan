@@ -7,7 +7,7 @@
 #' @param .glue_control named list of arguments to glue, includeing .open and .close
 #' @param .macro_list a list of arguments to be used for glue's string interpolation
 #' @param .quote_args logical; if true, macro calls in the stan file will have arguments quoted instead of evaluated
-#' @return the parsed stan code (invisibly if `out_file = NA`)
+#' @return the parsed stan code if `out_file = NA`; otherwise `out_file`
 #' @export
 parse_stan_macros = function(input, out_file = NA, ...,
                              .macro_symbol = "$",
@@ -27,11 +27,13 @@ parse_stan_macros = function(input, out_file = NA, ...,
   # Write out file, if possible
   if(!is.na(out_file)) {
     writeLines(out_code, out_file)
-    ret = invisible
-  } else ret = return
+    out = out_file
+  } else {
+    out = out_code
+  }
   # Check to see if the final code is valid
   rstan::stanc(model_code = out_code)
-  ret(out_code)
+  out
 }
 
 # Delimiters should have the macro symbol appended before or after them

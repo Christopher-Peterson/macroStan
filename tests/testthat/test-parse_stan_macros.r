@@ -75,21 +75,22 @@ likelihood_fun = structure(function(alpha = "theta[1]", beta = "theta[2]") {
 # can generate
 # For these tests, we should define a macro, otherwise this won't work
 
+parsed_txt = parse_stan_macros(wlm_code, NA,
+                               .macro_list = test_macro_list,
+                               likelihood = likelihood_fun)
 
 test_that("parse_stan_macros can generate valid stan code",{
   # This should fail because alpha isn't defined
   # It should return a character vector
-  expect_type(parse_stan_macros(wlm_code, NA,
-                 .macro_list = test_macro_list,
-                  likelihood = likelihood_fun), "character")
+  expect_type(parsed_txt, "character")
 })
 test_out_file = tempfile(fileext = ".stan")
 
-out_txt = parse_stan_macros(wlm_code, test_out_file,
+written_file = parse_stan_macros(wlm_code, test_out_file,
                   .macro_list = test_macro_list,
-                  alpha = "theta[1]",
                   likelihood = likelihood_fun)
 
 test_that("parse_stan_macros can output a file", {
-  expect_equal(out_txt, glue::glue_collapse(readLines(test_out_file), "\n"))
+  expect_equal(parsed_txt, glue::glue_collapse(readLines(test_out_file), "\n"))
+  expect_equal(written_file, test_out_file)
 })

@@ -18,7 +18,7 @@ transformed parameters {
   $ hs_betas$tparms
 }
 model {
-  vector[N] eta = alpha + x * ${ hs_betas$coef }$ ;
+  vector[N] eta = alpha + x * {{ hs_betas$coef }} ;
   $ hs_betas$prior
 
   target += normal_lpdf(y | eta, sigma);

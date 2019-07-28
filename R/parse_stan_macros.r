@@ -35,16 +35,13 @@ parse_stan_macros = function(input, out_file = NA, ...,
 }
 
 # Delimiters should have the macro symbol appended before or after them
-fix_delimiter = function(x, symbol, default = "{") {
+fix_delimiter = function(x, default = "{{") {
   x = ifelse(is.null(x), default, x)
-  if(!startsWith(x, symbol)) {
-    x = ifelse(default == "{", paste0(symbol, x), paste0(x, symbol))
-  }
   x
 }
 set_open_close = function(control=list(), .macro_symbol = "$") {
-  control$.open = fix_delimiter(control$.open, .macro_symbol)
-  control$.close = fix_delimiter(control$.close, .macro_symbol, default = "}")
+  control$.open = fix_delimiter(control$.open)
+  control$.close = fix_delimiter(control$.close, default = "}}")
   control
 }
 

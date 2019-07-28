@@ -2,10 +2,22 @@
 % Please edit documentation in R/define_stan_macro.r
 \name{glue_args}
 \alias{glue_args}
-\title{alternate paramterization for glue_data, easier to lapply with}
+\title{alternate paramterization for `glue_data`, easier to lapply with}
 \usage{
-glue_args(what, args, control = list(), ...)
+glue_args(what, args = list(), control = list(.open = "{{", .close =
+  "}}"), ..., .quote = FALSE)
+}
+\arguments{
+\item{what}{scalar character string to `glue_data`}
+
+\item{args}{a list of data for `glue_data`}
+
+\item{control}{a named list of control arguments for `glue_data`}
+
+\item{...}{additional data to be combined with `args`}
+
+\item{.quote}{logical, indicating whether `stan_macros` in `what` should quote their arguments}
 }
 \description{
-alternate paramterization for glue_data, easier to lapply with
+alternate paramterization for `glue_data`, easier to lapply with
 }

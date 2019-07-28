@@ -12,9 +12,9 @@ test_that("glue_args works", {
 
 # define some objects for testing
 test_args = alist(a = , b = 2, c = "normal")
-test_text = "{b} is {c}"
+test_text = "{{b}} is {{c}}"
 sm = define_stan_macro(test_args, first = test_text,
-                       second = "{a} is here")
+                       second = "{{a}} is here")
 sm_list = summary(sm)
 sm_args = formals(sm)
 
@@ -35,8 +35,8 @@ test_that("define_stan_macro's function produces valid output", {
   expect_type(sm(a = "tst", .section = "first"), "character")
   expect_type(unlist(sm(a = "tst")), "character")
   # make sure that no braces remain
-  expect_false(any(grepl("{", unlist(sm(a = "tst")), fixed = TRUE)))
-  expect_false(any(grepl("}", unlist(sm(a = "tst")), fixed = TRUE)))
+  expect_false(any(grepl("{{", unlist(sm(a = "tst")), fixed = TRUE)))
+  expect_false(any(grepl("}}", unlist(sm(a = "tst")), fixed = TRUE)))
 })
 
 
@@ -58,7 +58,7 @@ test_that("quote_macros works", {
 })
 
 test_that("glue_args can handle quoting", {
-  txt = "{func(alpha2, bogon)}"
+  txt = "{{func(alpha2, bogon)}}"
   expect_error( # not quoted
     glue_args(what = txt, func =  test_fun))
   expect_equal(

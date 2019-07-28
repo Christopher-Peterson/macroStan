@@ -19,7 +19,7 @@ model {
   $ alpha_ncp$prior
   target += student_t_lpdf([sigma, tau] | 7, 0, 5) ;
 
-  target += normal_lpdf( y | ${ alpha_ncp$name }$[group] , sigma);
+  target += normal_lpdf( y | {{ alpha_ncp$name }}[group] , sigma);
 }
 
 "

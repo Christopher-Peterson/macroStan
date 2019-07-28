@@ -4,7 +4,8 @@
 \alias{define_stan_macro}
 \title{define_stan_macro: create a function that makes stan macros convienient}
 \usage{
-define_stan_macro(.args = alist(), ..., .glue_control = list())
+define_stan_macro(.args = alist(), ..., .glue_control = list(.open =
+  "{{", .close = "}}"))
 }
 \arguments{
 \item{.args}{alist of argument names that must be subbed}

@@ -3,37 +3,34 @@
 #' @param coef name of the "end-product" created by the macro, to be used elsewhere in the stan code
 #' @param functions functions block
 #' @param data data block
-#' @param transformed_data_1 declarations in transformed data block
-#' @param transformed_data_2 after declarations transformed data block
-#' @param parameters parameters block
-#' @param transformed_parameters_1 declarations in transformed parameters block
-#' @param transformed_parameters_2 after declarations in transformed parameters block
+#' @param td1 declarations in transformed data block
+#' @param td2 after declarations transformed data block
+#' @param parms parameters block
+#' @param tp1 declarations in transformed parameters block
+#' @param tp2 after declarations in transformed parameters block
 #' @param model_decl local declarations in model block
 #' @param prior prior distributions in model block
 #' @param likelihood likelihood statements in model block
-#' @param generated_quantities_1 declarations in generated quantities block
-#' @param generated_quantities_2 after declarations in generated quantities block
+#' @param gq1 declarations in generated quantities block
+#' @param gq2 after declarations in generated quantities block
 #' @param ... named character vectors defining extra sections of the macro; these will be used with `glue`
 #' @param .glue_control named list of control args for glue
 #' @return a function that with arguments .section, ..., and whatever is in .args
 #' @export
 define_stan_macro = function(.args = alist(), coef = "", functions = "", data = "",
-                             transformed_data_1 = "", transformed_data_2 = "",
-                             parameters = "",transformed_parameters_1 = "",
-                             transformed_parameters_2 = "", model_decl = "",
-                             prior = "", likelihood = "",generated_quantities_1 = "",
-                             generated_quantities_2 = "", ...,
+                             td1 = "", td2 = "", parms = "",tp1 = "",
+                             tp2 = "", model_decl = "", prior = "", likelihood = "",
+                             gq1 = "", gq2 = "", ...,
                              .glue_control = list(.open = "{{", .close = "}}")) {
   sections = list(functions = functions, coef = coef, data = data,
-                  transformed_data_1=transformed_data_1, td1 = transformed_data_1,
-                  transformed_data_2=transformed_data_2, td2 = transformed_data_2,
-                  parameters = parameters, parms = parameters,
-                  transformed_parameters_1 = transformed_parameters_1, tp1 = transformed_parameters_1,
-                  transformed_parameters_2 = transformed_parameters_2, tp2 = transformed_parameters_2,
+                  transformed_data_1=td1, td1 = td1,
+                  transformed_data_2=td2, td2 = td2,
+                  parameters = parms, parms = parms,
+                  transformed_parameters_1 = tp1, tp1 = tp1,
+                  transformed_parameters_2 = tp2, tp2 = tp2,
                   model_decl = model_decl, prior = prior, likelihood = likelihood, like = likelihood,
-                  generated_quantities_1 = generated_quantities_1, gq1 = generated_quantities_1,
-                  generated_quantities_2 = generated_quantities_2, gq2 = generated_quantities_2,
-                  ...)
+                  generated_quantities_1 = gq1, gq1 = gq1,
+                  generated_quantities_2 = gq2, gq2 = gq2, ...)
   sec_names = force(c(".all", force(names(sections))))
   .args_full = c(.args, alist(...=, .section = sec_names))
 

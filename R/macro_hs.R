@@ -7,6 +7,7 @@
 #' @export
 stan_macro_horseshoe = define_stan_macro(
   .args = alist(name=1, N_local = "D"),
+  coef = "b_{{name}}",
   functions = "// horseshoe computation
   vector horseshoe(vector zb, vector[] local, real[] global,
                  real scale_global, real c2) {
@@ -23,12 +24,18 @@ stan_macro_horseshoe = define_stan_macro(
   real<lower=0> hs_df_slab_{{name}};  // slab degrees of freedom
   real<lower=0> hs_scale_global_{{name}};  // global prior scale
   real<lower=0> hs_scale_slab_{{name}};  // slab prior scale",
-  parameters = "  // horseshoe shrinkage parameters, global
+  parms = "  // horseshoe shrinkage parameters, global
   real<lower=0> hs_global_{{name}}[2];  // global shrinkage parameters
   real<lower=0> hs_c2_{{name}};  // slab regularization parameter
   // local parameters for horseshoe
   vector[{{N_local}}] hs_z_{{name}};
   vector<lower=0>[{{N_local}}] hs_local_{{name}}[2];",
+  tp1 = glue_args(" // horseshoe regression coefs
+  vector[{{N_local}}] b_{{name}} = horseshoe({{hs_args}});",
+     N_local = "{{N_local}}", name = "{{name}}",
+     hs_args = paste("hs_z_{{name}}, hs_local_{{name}}",
+       "hs_global_{{name}}", "hs_scale_global_{{name}}",
+       "hs_scale_slab_{{name}}^2 * hs_c2_{{name}}", sep = ", ") ),
   prior =  " // horseshoe prior, global
   target += std_normal_lpdf(hs_global_{{name}}[1]) - 1 * log(0.5) +
             inv_gamma_lpdf(hs_global_{{name}}[2] |
@@ -38,14 +45,5 @@ stan_macro_horseshoe = define_stan_macro(
   target += std_normal_lpdf(hs_z_{{name}}) +
             std_normal_lpdf(hs_local_{{name}}[1]) -  {{N_local}} * log(0.5) +
             inv_gamma_lpdf(hs_local_{{name}}[2] |
-               0.5 * hs_df_{{name}}, 0.5 * hs_df_{{name}});",
-  coef = "b_{{name}}",
-  # WHAT IS ncoef?????
-  transformed_parameters_1 = glue_args(" // horseshoe regression coefs
-  vector[{{N_local}}] b_{{name}} = horseshoe({{hs_args}});",
-     N_local = "{{N_local}}", name = "{{name}}",
-     hs_args = paste("hs_z_{{name}}, hs_local_{{name}}",
-       "hs_global_{{name}}", "hs_scale_global_{{name}}",
-       "hs_scale_slab_{{name}}^2 * hs_c2_{{name}}", sep = ", ") )
-
+               0.5 * hs_df_{{name}}, 0.5 * hs_df_{{name}});"
   )

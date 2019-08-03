@@ -53,57 +53,5 @@ define_stan_macro = function(.args = alist(), coef = "", functions = "", data = 
   class(out_fun) = c("stan_macro", "function")
   out_fun
 }
-#' returns logical
-is_stan_macro = function(x) {
-  "stan_macro" %in% class(x) && rlang::is_function(x)
-}
-
-# takes a function, wraps it in another function that quotes its args and converts them to characters
-wrap_quote = function(.f) {
-  function(...) {
-  # browser()
-    char_args = lapply(rlang::enexprs(...), rlang::expr_deparse)
-    do.call(.f, char_args)
-  }
-}
-
-# when called on a list of arguments, it makes sure any macros will automatically quote arguments
-quote_macros = function(arg_list) {
-  arg_names = names(arg_list)
-  is_macro = vapply(arg_list, is_stan_macro, TRUE)
-  arg_list[is_macro] = lapply(arg_list[is_macro], wrap_quote)
-  setNames(arg_list, arg_names)
-}
-
-#' alternate paramterization for `glue_data`, easier to lapply with
-#' @param what scalar character string to `glue_data`
-#' @param args a list of data for `glue_data`
-#' @param control a named list of control arguments for `glue_data`
-#' @param ... additional data to be combined with `args`
-#' @param .quote logical, indicating whether `stan_macros` in `what` should quote their arguments
-#' @export
-glue_args = function(what, args = list(),
-                     control = list(.open = "{{", .close = "}}"), ...,
-                     .quote = FALSE) {
-  # browser()
-  .x = c(args, list(...))
-  if(isTRUE(.quote)) {
-    .x = quote_macros(.x)
-  }
-  the_args = c(list(.x = .x, what), control)
-  do.call(glue_data, the_args)
-}
 
 
-
-#' @export
-summary.stan_macro = function(x, ...) {
-  environment(x)$sections
-}
-#' @export
-print.stan_macro = function(x, ...) {
-  cat("Stan Macro:\n")
-  print(summary(x))
-}
-
-# Look into @exportClass and @exportMethod

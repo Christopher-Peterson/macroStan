@@ -51,3 +51,21 @@ test_that("args_as_char works", {
   expect_equal(args_as_char(nquote_call2), quote_call2)
   expect_equal(args_as_char(quote_call2), quote_call2)
 })
+test_that("parse_assignment works", {
+  expect_identical(parse_assignment("abc = {{1, 2}, {3, 4}}"),
+                   rlang::parse_expr('abc = "{{1, 2}, {3, 4}}"'))
+  expect_identical(macroStan:::parse_assignment("abc", "rhs"),"abc")
+  expect_identical(macroStan:::parse_assignment("abc", "lhs"),
+                   rlang::sym("abc"))
+  expect_identical(parse_assignment("x = y"),
+                   rlang::parse_expr('x = "y"'))
+  expect_identical(parse_assignment("x = [y,1]"),
+                   rlang::parse_expr('x = "[y,1]"'))
+  expect_identical(parse_assignment("[x,1]", "rhs"),
+                   rlang::parse_expr('"[x,1]"'))
+  expect_identical(parse_assignment("x", "rhs"),
+                   rlang::parse_expr('"x"'))
+  expect_identical(parse_assignment("x", "lhs"),
+                   rlang::parse_expr("x"))
+})
+

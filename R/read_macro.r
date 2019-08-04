@@ -1,13 +1,24 @@
+#' generic function used by get_macro_calls and get_macro_args
+#' @param blocks a macro file parsed with `get_blocks`
+#' @param .def_side for `parse_assignments`
+#' @param block_name "use macros" or "macro args"
+parse_macro_block = function(blocks, .def_side = c("rhs", "lhs"),
+                             block_name = c("use macros", "macro args")){
+  block_name = match.arg(block_name)
+  err_msg = ifelse(block_name == "use macros", "No macros defined", "Not a macro")
+  if(!block_name %in% names(blocks)) stop(err_msg)
+  # remove linebreaks, split by semicolon
+  no_comments = remove_comments(blocks[[block_name]])
+  call_txt = remove_empty_strings(trimws(
+    strsplit(no_comments, split = ";\n", fixed = TRUE)[[1]]))
+  parse_assignments(call_txt, .def_side = .def_side)
+}
+
 #' #' extracts the arguments from a macro args block
 #' #' @param blocks a macro file parsed with `get_blocks`
 #' #' @return a list of language objects, one per argument
 get_macro_args = function(blocks) {
-  # values: should values(after equal sign) be removed, kept, or the only thing?
-  if(!"macro args" %in% names(blocks)) stop("Not a macro!")
-  # remove linebreaks, split by semicolon
-  args_txt = strsplit(blocks[["macro args"]],
-                      split = ";\n", fixed = TRUE)[[1]]
-  rlang::parse_exprs(args_txt)
+  parse_macro_block(blocks, "lhs", "macro args")
 }
 
 #' @param .args list of language objects returned by `get_macro_args`
@@ -27,7 +38,9 @@ get_arg_names = function(.args) {
 #' checks to make sure that only defined arguments are used for splicing in a macro
 #' @param blocks a macro file parsed with `get_blocks`
 #' @return `invisible(blocks)`, if valid; otherwise throws an error`
-validate_macro_args = function(blocks, args, .left = "{|", .right = "|}") {
+validate_macro_args =
+  function(blocks, args, .left = "{|", .right = "|}") {
+  # browser()
   arg_names = get_arg_names(args)
   u_blocks = unlist(blocks, use.names = FALSE)
 
@@ -77,8 +90,8 @@ read_macro = function(file, macro_code = readLines(file), .glue_control =
   out = function(to_be_replaced){
     # browser()
     arg_list = as.list(as.environment(-1L))
-    glue_it = function(.x, .quote = TRUE) as.character(
-      glue_args(.x, args = arg_list, control = .glue_control, .quote = .quote))
+    glue_it = function(.x) as.character(
+      glue_args(.x, args = arg_list, control = .glue_control))
     # sizes = vapply(code_blocks, length, 1)
     sapply(sections, function(block) {
       if(length(block) > 1) {
@@ -98,24 +111,6 @@ read_macro = function(file, macro_code = readLines(file), .glue_control =
 is_stan_macro = function(x) {
   "stan_macro" %in% class(x) && rlang::is_function(x)
 }
-
-# takes a function, wraps it in another function that quotes its args and converts them to characters
-wrap_quote = function(.f) {
-  function(...) {
-    # browser()
-    char_args = lapply(rlang::enexprs(...), rlang::expr_deparse)
-    do.call(.f, char_args)
-  }
-}
-
-# when called on a list of arguments, it makes sure any macros will automatically quote arguments
-quote_macros = function(arg_list) {
-  arg_names = names(arg_list)
-  is_macro = vapply(arg_list, is_stan_macro, TRUE)
-  arg_list[is_macro] = lapply(arg_list[is_macro], wrap_quote)
-  setNames(arg_list, arg_names)
-}
-
 
 #' @export
 summary.stan_macro = function(x, ...) {

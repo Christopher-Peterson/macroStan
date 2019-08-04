@@ -1,16 +1,17 @@
 test_that("get_macro_args works", {
   input = list(`macro args` = c("
   beta = x;
+  // comment, ignore
   prior = normal_lpdf(y | mu, sigma);
-  delta;
+  delta = [1,2]';
   value;
   "))
   expec = rlang::parse_exprs(c(
-    "beta = x",
-    "prior = normal_lpdf(y | mu, sigma)",
-    "delta",
+    "beta = \"x\"",
+    "prior = \"normal_lpdf(y | mu, sigma)\"",
+    "delta = \"[1,2]'\"",
     "value"))
-  out = get_macro_args(input)
+  out = macroStan:::get_macro_args(input)
   # If this gets worse, try using a map function
   lapply(seq_along(expec), function(i)
     expect_identical(out[[i]], expec[[i]]))
@@ -23,20 +24,20 @@ test_that("get_arg_names works",{
 })
 test_that("validate_macro_args catches errors", {
   good_txt = list(
-  `macro args` = c("
+  `macro args` = "
     alpha;
     beta = 1;
     value = val",
   data = "
   int N;
-  real size_{| alpha |}"))
+  real size_{| alpha |}")
   bad_txt = good_txt
   bad_txt$parameters = "
   real {| theta |};"
-  args1 = get_macro_args(good_txt)
-  args2 = get_macro_args(bad_txt)
-  expect_invisible(validate_macro_args(good_txt, args1))
-  expect_error(validate_macro_args(bad_txt, args2))
+  args1 = macroStan:::get_macro_args(good_txt)
+  args2 = macroStan:::get_macro_args(bad_txt)
+  expect_invisible(macroStan:::validate_macro_args(good_txt, args1))
+  expect_error(macroStan:::validate_macro_args(bad_txt, args2))
   })
 
 test_that("parse_macro_formals works",{
@@ -46,6 +47,7 @@ test_that("parse_macro_formals works",{
 })
 
 test_file = "../../inst/macros/horseshoe.stan"
+# test_file = "inst/macros/horseshoe.stan"
 
 test_that("read_macro creates an object of the correct class",{
   out = read_macro(test_file)

@@ -46,18 +46,33 @@ test_that("has_value works", {
   expect_false(has_value(function(){}))
 })
 
+test_that("get_macro_calls works",{
+  block =list(`use macros` =
+         "value = horseshoe([x,y]', name = hs_beta, N_local = [1,2]' )
+      // comments are removed
+      ")
+  out = macroStan:::get_macro_calls(block)[[1]]
+  arg_txt = as.character(as.list(out)[-1])
+  as.list(out)
+  expect_equal(names(out), c("", "", "name", "N_local", "value"))
+  expect_equal(out[[1]], rlang::sym("horseshoe"))
+  expect_equal(arg_txt, c("[x,y]'", "hs_beta", "[1,2]'", "value"))
+})
+
 test_that("parse_macro_call gives valid output?", {
   out = parse_macro_calls(
     list(`use macros` =
-      "value = horseshoe(name = hs_beta, N_local = N_group)"),
+      "value = horseshoe(name = hs_beta, N_local = N_group)
+      // comments are removed
+      "),
     macro_list = list(horseshoe = read_macro(test_file)))
   expect_type(out, "list")
   expect_true(all(names(out) %in% block_names))
   expect_false(any(grepl("{|", unlist(out), fixed = TRUE)))
   expect_false(any(grepl("|}", unlist(out), fixed = TRUE)))
 })
-# test_file = "inst/test_hs_macro.stan"
-# test_scaffold = "inst/stan_scaffolds/macro_hs.stan"
+# test_file = "inst/horseshoe.stan"
+# test_scaffold = "inst/stan_scaffolds/horseshoe.stan"
 
 macro_list = list(horseshoe = macroStan:::read_macro(test_file))
 the_scaffold = macroStan:::get_blocks(readLines(test_scaffold))
@@ -73,9 +88,6 @@ hs_parse = rlang::eval_tidy(rlang::expr(
 hs_ordered = hs_parse
 hs_ordered[["transformed parameters"]] = hs_parse[["transformed parameters"]]$declarations
 hs_ordered[["model"]] = hs_parse[["model"]]$post
-
-
-
 
 test_that("block_insert_functions works", {
   funs = macroStan:::block_insert_functions(the_scaffold, names(hs_parse))

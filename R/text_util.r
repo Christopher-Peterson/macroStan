@@ -50,6 +50,39 @@ get_all_delim_contents = function(x, .left, .right) {
     substr(x, starts[i] + nchar(.left), ends[i] - nchar(.right))
   }, "chr")
 }
+
+#' returns x, but with the delim and its contents removed
+blank_delim_contents = function(x, .left = "{", .right = "}") {
+  to_replace = paste0(.left,
+                get_all_delim_contents(x, .left, .right), .right)
+  nullify_string = function(x, pattern) {
+    gsub(pattern, null_string(pattern), x, fixed = TRUE)
+  }
+  Reduce(nullify_string, to_replace, x)
+}
+#' a version of the function for Reduce()
+#' delims should be a length-2 character vector c(.left, .right)
+blank_delims_red = function(x, .delims) {
+  blank_delim_contents(x, .delims[1], .delims[2])
+}
+
+# take a character vector of an argument list
+# return a vector of unparsed arguments
+separate_commas = function(x, delim_list =
+             list(c("{","}"), c("(",")"), c("[","]"))){
+  # remove everything in parentheses, brackets, etc
+  # so that all remaining commas are top-level
+  x_blank = Reduce(blank_delims_red, delim_list, x)
+  # Where are the commas located?
+  comma_pos = unlist(gregexpr(",", x_blank, fixed = TRUE))
+  if(comma_pos[1] == -1) return(list(x))
+  trimws(unlist(mapply(function(from, to) substr(x, from, to),
+         from = c(0, comma_pos + 1),
+         to = c(comma_pos - 1, nchar(x)), SIMPLIFY = FALSE)))
+    # x = "a, b = c(d,e), f = [a, b]', g = {r}, duh"
+}
+
+
 #' this searches for left and right delimiters, but in a non-nested sense
 #' The next one it finds gets triggered
 extract_delim_linear = function(x, .left, .right) {
@@ -143,15 +176,9 @@ get_line_of_tag = function(x, tag, fixed = TRUE, ...){
 #' @param .quote logical, indicating whether `stan_macros` in `what` should quote their arguments
 #' @export
 glue_args = function(what, args = list(),
-                     control = list(.open = "{{", .close = "}}"), ...,
-                     .quote = FALSE) {
+                     control = list(.open = "{{", .close = "}}"), ...) {
   # browser()
   .x = c(args, list(...))
-  if(isTRUE(.quote)) {
-    .x = quote_macros(.x)
-  }
   the_args = c(list(.x = .x, what), control)
   do.call(glue_data, the_args)
 }
-
-

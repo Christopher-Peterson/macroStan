@@ -31,24 +31,31 @@ has_value = function(macro_fun) {
 #' ignores non-assignment expressions
 #' @param .expr language object
 parse_value = function(.expr) {
-  if(!is_assignment(.expr)) return(.expr)
-  .out = .expr[[3]]
-  .out$value = .expr[[2]]
+  if(!is_assignment(.expr)) {
+    .out = parse_macro_function(.expr)
+  } else {
+  # browser()
+  .out = parse_macro_function(.expr[[3]])
+  .out$value = parse_assignment(.expr[[2]], "rhs")
+  }
   .out
 }
 
+# First, put everything in parantheses in quotes
+parse_macro_function = function(x) {
+  in_paren = get_delim_contents(x, "(", ")")
+  # Now, we have a list of args
+  args = assignments_to_arg(parse_assignments(
+    separate_commas(in_paren), "rhs"))
+  base_call = rlang::parse_expr(blank_delim_contents(x, "(", ")"))
+  as.call(c(base_call, args))
+}
 #' extracts the macro calls from the use macros block
 #' @param blocks a macro file parsed with `get_blocks`
 #' @return a list of language objects, one per argument
 get_macro_calls = function(blocks) {
-  # browser()
-  # values: should values(after equal sign) be removed, kept, or the only thing?
-  if(!"use macros" %in% names(blocks)) stop("No macros defined!")
-  # remove linebreaks, split by semicolon
-  macro_call_txt = strsplit(blocks[["use macros"]],
-                      split = ";\n", fixed = TRUE)[[1]]
-  macro_expr = rlang::parse_exprs(macro_call_txt)
-  lapply(macro_expr, parse_value)
+  out = parse_macro_block(blocks, "rhs", "use macros")
+  lapply(out, parse_value)
 }
 
 #' identify which macros are being used and parse them into text

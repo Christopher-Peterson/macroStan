@@ -2,7 +2,7 @@
 // Required macros:
   // hs_betas (stan_macro_horseshoe)
 use macros {
-  beta = horseshoe(name = test, D);
+  beta = horseshoe(D);
 }
 functions{
 }

@@ -190,6 +190,18 @@ test_that("parse_stan_macros works on mv_ncp", {
   expect_equal(tst_out, out)
   expect_true(rstan::stanc(out)$status)
   # file.edit(tst_out)
-  # okay, this failed...
-#
   })
+
+# Test with three macros
+test_that("parse_stan_macros works on mv_ncp and hs", {
+  macro_files = list(
+    horseshoe = "../../inst/macros/horseshoe.stan",
+    ncp_mv = "../../inst/macros/ncp_mv.stan",
+    ncp_mv_linpred = "../../inst/macros/ncp_mv_linpred.stan")
+  scaffold = "../../inst/stan_scaffolds/ncp_mv_hs.stan"
+
+  tst_out = tempfile(fileext = ".stan")
+  out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
+  expect_equal(tst_out, out)
+  expect_true(rstan::stanc(out)$status)
+})

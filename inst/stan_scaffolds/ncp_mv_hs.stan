@@ -19,7 +19,7 @@ parameters {
   real<lower=0> sigma;
   real<lower=0> tau_alpha;
   vector<lower=0>[D] tau_beta;
-  real<lower=0> mu_alpha;
+  real mu_alpha;
   cholesky_factor_corr[D+1] L_omega;
 }
 model {

@@ -5,7 +5,7 @@ macro args {
   location = mu; // vector[N_coef]; the mean parameters
   scale = tau;  // vector[N_coef]; tau/standard deviation
   L_corr = L_omega; // cholesky_factor_corr[N_coef]
-  value = beta; // matrix[N_group, N_coef]
+  value = coef; // matrix[N_group, N_coef]
 }
 parameters{
   // ncp_mv parameters

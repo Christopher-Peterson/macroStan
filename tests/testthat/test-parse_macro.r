@@ -205,3 +205,13 @@ test_that("parse_stan_macros works on mv_ncp and hs", {
   expect_equal(tst_out, out)
   expect_true(rstan::stanc(out)$status)
 })
+
+test_that("ncp_simple works", {
+  macro_files = list(
+    ncp_simple = "../../inst/macros/ncp_simple.stan")
+  scaffold = "../../inst/stan_scaffolds/ncp_simple.stan"
+  tst_out = tempfile(fileext = ".stan")
+  out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
+  expect_equal(tst_out, out)
+  expect_true(rstan::stanc(out)$status)
+})

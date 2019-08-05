@@ -10,7 +10,7 @@ parse_macro_block = function(blocks, .def_side = c("rhs", "lhs"),
   # remove linebreaks, split by semicolon
   no_comments = remove_comments(blocks[[block_name]])
   call_txt = remove_empty_strings(trimws(
-    strsplit(no_comments, split = ";\n", fixed = TRUE)[[1]]))
+    strsplit(no_comments, split = ";", fixed = TRUE)[[1]]))
   parse_assignments(call_txt, .def_side = .def_side)
 }
 
@@ -72,6 +72,7 @@ parse_macro_formals = function(.args) {
 read_macro = function(file, macro_code = readLines(file), .glue_control =
                         list(.open = "{|", .close = "|}")) {
   macro_blocks = get_blocks(macro_code)
+  # browser()
   args = get_macro_args(macro_blocks)
 # Somewhere here, add the option to nest macros!
 # Add an extra arg for previously defined macros

@@ -70,7 +70,7 @@ assignments_to_arg = function(.l) {
 
 
 
-# Wrap the rhs of an asignment in quotes
+  # Wrap the rhs of an asignment in quotes
 #' @param text of an assignment
 #' @param .def_side if there's no assignment, what should it be treated as?
 parse_assignment = function(x, .def_side) {
@@ -89,6 +89,7 @@ parse_assignment = function(x, .def_side) {
     lh = trimws(substring(x, pos+extra))
     out = glue::glue('{rh} = "{lh}"')
   }
+  # browser()
   rlang::parse_expr(out)
 }
 

@@ -1,6 +1,4 @@
 // Horseshoe prior example
-// Required macros:
-  // hs_betas (stan_macro_horseshoe)
 use macros {
   beta = horseshoe(D);
 }

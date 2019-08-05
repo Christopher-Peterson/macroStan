@@ -1,5 +1,13 @@
 # functions involving general parsing of stan files
 
+list_block_names = function(.macro = FALSE) {
+  out = c("functions", "data", "transformed data",
+          "parameters", "transformed parameters",
+          "model", "generated quantities")
+  if(isTRUE(.macro)) out = c("macro args", "use macros", out)
+  out
+}
+
 # Why did I use this again?
 block_size = function(x) {
   if(is.null(x)) x = ""
@@ -35,10 +43,7 @@ remove_internal_blocks = function(x, delim = "{|") {
 
 #' parse a stan file and pull out the corresponding block
 #' note that two extra block names are here
-find_block = function(x, block = c("macro args", "use macros",
-                                   "functions", "data", "transformed data",
-                                   "parameters", "transformed parameters",
-                                   "model", "generated quantities"), ...) {
+find_block = function(x, block = list_block_names(.macro = TRUE), ...) {
   block = match.arg(block)
   x = as.character(x)
   # separate lines into elements
@@ -90,10 +95,7 @@ separate_declarations = function(x) {
 }
 
 get_blocks = function(x) {
-  block_list = c("macro args", "use macros",
-                 "functions", "data", "transformed data",
-                 "parameters", "transformed parameters",
-                 "model", "generated quantities")
+  block_list = list_block_names(TRUE)
   separated_blocks = remove_empty_strings(
     setNames(
       lapply(block_list, function(.block)

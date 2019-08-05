@@ -52,18 +52,16 @@ test_file = "../../inst/macros/horseshoe.stan"
 test_that("read_macro creates an object of the correct class",{
   out = read_macro(test_file)
   expect_equal(class(out), c("stan_macro", "function"))
-  expect_equal(names(formals(out)), c("name", "N_local", "value"))
+  expect_equal(names(formals(out)), c("N_local", "value"))
   expect_equal(formals(out)$N_local, "N_group")
   expect_equal(formals(out)$value, "beta_hs")
-  expect_true(rlang::is_missing(formals(out)$name))
 })
 test_that("read_macro's output is in the right format",{
   macro = read_macro(test_file)
-  expect_error(macro(name=)) # missig name
   block_names = c("functions", "data", "transformed data",
                   "parameters","transformed parameters",
                   "model", "generated quantities")
-  out = macro(name = "test")
+  out = macro(value = "test")
   expect_type(out, "list")
   expect_true(all(names(out) %in% block_names))
   two_part_blocks = names(out)[names(out) %in% block_names[c(3, 5, 6, 7)]]

@@ -84,7 +84,7 @@ test_that("order_stan_macros works", {
   expect_true(all(names(out) %in% block_names))
 })
 hs_parse = rlang::eval_tidy(rlang::expr(
-  horseshoe("tst", "D", "beta")), data = macro_list)
+  horseshoe("D", "beta")), data = macro_list)
 hs_ordered = hs_parse
 hs_ordered[["transformed parameters"]] = hs_parse[["transformed parameters"]]$declarations
 hs_ordered[["model"]] = hs_parse[["model"]]$post
@@ -170,10 +170,26 @@ test_that("verify_macro_list returns list of macros",{
 })
 
 # The big one
-test_that("parse_stan_macros works", {
+test_that("parse_stan_macros works on horseshoe", {
   tmp_out = tempfile(fileext = ".stan")
   out = macroStan:::parse_stan_macros(test_scaffold, tmp_out,
     macro_files = list(
     horseshoe = test_file), .validate_output = FALSE)
   expect_true(rstan::stanc(out)$status)
 })
+
+# Test with two macros
+test_that("parse_stan_macros works on mv_ncp", {
+  macro_files = list(
+    ncp_mv = "../../inst/macros/ncp_mv.stan",
+    ncp_mv_linpred = "../../inst/macros/ncp_mv_linpred.stan")
+  scaffold = "../../inst/stan_scaffolds/ncp_mv.stan"
+
+  tst_out = tempfile(fileext = ".stan")
+  out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
+  expect_equal(tst_out, out)
+  expect_true(rstan::stanc(out)$status)
+  # file.edit(tst_out)
+  # okay, this failed...
+#
+  })

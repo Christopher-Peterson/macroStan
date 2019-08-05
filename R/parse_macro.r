@@ -81,9 +81,7 @@ order_stan_macros = function(blocks, macro_list = list()) {
     lapply(parse_macro_calls(blocks, macro_list),
            rlang::eval_tidy,data = macro_list)
   # remove linebreaks, split by semicolon
-  block_names = c("functions", "data", "transformed data",
-                  "parameters", "transformed parameters",
-                  "model", "generated quantities")
+  block_names = list_block_names(FALSE)
   # browser()
   block_code =  setNames(
     lapply(block_names, function(block) {
@@ -129,13 +127,16 @@ block_insert_functions = function(scaffold, block_names) {
 #' @param scaffold_list a `stan_blocks` list to be inserted into
 #' @param macro_blocks a `stan_blocks` list of parsed macros to insert
 insert_macros = function(scaffold_list, macro_blocks) {
-  macro_names = names(macro_blocks)
-  names(macro_names) = macro_names ## this is for the lapply later
-  insert_functions = block_insert_functions(scaffold_list, macro_names)
+
+  block_names = list_block_names(FALSE)
   # browser()
-  # determine which positions need to be inserted in which way
-  lapply(macro_names, function(.nm) {
-    # if(.nm == "model") browser()
+  block_names = block_names[
+    block_names %in% c(names(macro_blocks), names(scaffold_list))]
+  names(block_names) = block_names ## this is for the lapply later
+  insert_functions = block_insert_functions(scaffold_list, block_names)
+  # insert_functions = block_insert_functions(scaffold_list, macro_names)
+
+  lapply(block_names, function(.nm) {
     insert_functions[[.nm]](scaffold_list[[.nm]], macro_blocks[[.nm]])
   })
 }
@@ -197,10 +198,10 @@ parse_stan_macros = function(input, output_file,
                              macro_list = list(),
                              macro_files = list(), ...,
                              .validate_output = TRUE) {
-  # browser()
   all_macros = verify_macro_list(macro_files, macro_list, ...)
   scaffold_code = get_input_code(input)
   scaffold = get_blocks(scaffold_code)
+  # browser()
   macros = order_stan_macros(scaffold, all_macros)
   out_code = blocks_to_stan_string(insert_macros(scaffold, macros))
   if(!is.na(output_file)) {

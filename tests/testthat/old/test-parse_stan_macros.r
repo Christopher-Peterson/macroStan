@@ -1,3 +1,4 @@
+
 ### glue delimiter tests ####
 test_that("fix_demimiter works", {
   expect_equal(fix_delimiter(NULL, ), "{{")

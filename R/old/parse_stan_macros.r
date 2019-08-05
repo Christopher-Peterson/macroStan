@@ -37,27 +37,16 @@ parse_stan_macros = function(input, out_file = NA, ...,
 }
 
 # Delimiters should have the macro symbol appended before or after them
-fix_delimiter = function(x, default = "{{") {
+fix_delimiter = function(x, default = "{|") {
   x = ifelse(is.null(x), default, x)
   x
 }
 set_open_close = function(control=list(), .macro_symbol = "$") {
-  control$.open = fix_delimiter(control$.open)
-  control$.close = fix_delimiter(control$.close, default = "}}")
+  control$.open = fix_delimiter(control$.open, default = "{|")
+  control$.close = fix_delimiter(control$.close, default = "|}")
   control
 }
 
-get_input_code = function(input) {
-  if(length(input) == 1 &&
-     file.exists(input) &&
-     tolower(tolower(tools::file_ext(input))) == "stan") {
-    input_code = readLines(input)
-  } else {
-    # Each line should be a different element of the vector
-    input_code = unlist(strsplit(input, split = "\n", fixed = TRUE))
-  }
-  input_code
-}
 
 # lines that start with the symbol are wrapped in the delimiters
 wrap_line_macros = function(code, .macro_symbol = "$",

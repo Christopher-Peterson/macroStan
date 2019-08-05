@@ -4,20 +4,37 @@ output:
   github_document: default
 ---
 
-```{r setup, echo=FALSE, cache = FALSE}
+```{r setup, echo=FALSE, cache = FALSE, message = FALSE}
+library(macroStan)
+library(rstan)
 knitr::opts_chunk$set(echo = TRUE)
 wd = "."
-knitr::read_chunk(file.path(wd, "R/macro_ncp.R"), labels = "npc_macro", from = 2) # skip roxygen tags
-knitr::read_chunk(file.path(wd, "R/macro_hs.R"), labels = "hs_macro", from = 8) # skip roxygen tags
 
+stan_to_chunk = function(i, .list) {
+  # browser()
+  invisible(knitr::read_chunk(.list[[i]], label = names(.list)[i]))
+}
 
-input_file = file.path(wd, "inst/stan_scaffolds/macro_ncp.stan")
-input_file_hs = file.path(wd, "inst/stan_scaffolds/macro_hs.stan")
-knitr::read_chunk(input_file, label = "npc_scaffold")
-knitr::read_chunk(input_file_hs, label = "hs_scaffold")
-
-
-library(macroStan)
+import_stan_chunks = function(...) {
+  .l = list(...)
+  lapply(seq_along(.l), stan_to_chunk, .list = .l)
+  .l
+}
+macros = import_stan_chunks(
+  macro_ncp_simple = file.path(wd, "inst/macros/ncp_simple.stan"),
+  macro_hs = file.path(wd, "inst/macros/horseshoe.stan"),
+  macro_ncp = file.path(wd, "inst/macros/ncp_mv.stan"),
+  macro_ncp_lp = file.path(wd, "inst/macros/ncp_mv_linpred.stan"))
+scaffolds = import_stan_chunks(
+  scaffold_ncp_simple = file.path(wd,
+    "inst/stan_scaffolds/ncp_simple.stan"),
+  scaffold_hs = file.path(wd, 
+    "inst/stan_scaffolds/horseshoe.stan"),
+  scaffold_ncp = file.path(wd,
+    "inst/stan_scaffolds/ncp_mv.stan"),
+  scaffold_ncp_hs = file.path(wd,
+    "inst/stan_scaffolds/ncp_mv_hs.stan")
+)
 
 ```
 
@@ -25,69 +42,149 @@ R package for defining text macros in Stan for flexible code reuse.
 
 macroStan provides a method to define reuseable, parameterized chunks of code and insert them into the appropriate locations of a stan file.  The package was inspired by (and uses) the `glue` package.
 
-## Example: Non-centered parameterization
+## Example: Varying intercept non-centered parameterization
 
-As a simple example, we'll define a macro for the non-centered parameterization of a hierarchical parameter.  
+Macros are defined as a stan file with an extra `macro args` block at the top.  Each argument is declared on a separate line ending with a semicolon; default values can be optionally provided. To use a macro, a `use macros` block is included with a stan file, with each listing a macro and defining its arguments. 
 
-```{r npc_macro, echo=TRUE, eval = FALSE}
+Here's a macro for the non-centered parameterization of a varying intercept model, paired with a simple "scaffold" model to use it with.
+
+**Macro:**
+```{stan macro_ncp_simple, output.var = "m_ncp_s", eval = FALSE}
 ```
 
-This defines a macro with the arguments `name`, `mu`, `sd`, and `size`. The macro contains a number of sections (`coef`, `parms`, `tp1`, `prior`), which contain snippets of stan code.  The macro's arguments are referenced in the sections with double curly braces. 
-Let's use this macro to setup a hierarchical intercept with specific parameters:
+This macro has the arguments  `N_group`, `location`, `scale`, and `value`.  Code in the remaining blocks has been written with argument tags (e.g., `{|N_group|}`), which are replaced with the argument's value when parsed.
 
-```{r echo=TRUE, eval = TRUE}
-alpha_ncp = stan_macro_ncp(name = "alpha", mu = "mu", sd = "tau", size = "N_groups")
+**Scaffold:**
+```{stan scaffold_ncp_simple, output.var = "junk2", eval = FALSE}
 ```
 
-Now the parameters snippet (`alpha_ncp$parm`) is:
 
-```{r, echo = FALSE} 
-cat(alpha_ncp$parm)
-``` 
+The macro is invoked with `alpha = ncp_simple(N_groups, mu, tau);`.
+The parser will match the provided arguments by name or position. If the macro is called as part of an assignment, the left hand side is treated as the `value` argument (if the macro has one). In the macros I've included in this document, the `value` argument corresponds to a transformed parameter or local model variable that is primary output of the macro; the assignment syntax highlights that the value should be useable in other parts of the stan program.
 
-Once a macro has been defined, a stan model can be written to use it
+This call thus defines the arguments `N_group` as `N_groups`, `location` as `mu`, `scale` as `tau`, and `value` as `alpha`.  Once the arguments are defined, argument tags are replaced with their new definitions (e.g., `z_{|value|} * {|scale|}` becomes `z_alpha * tau`).  
 
-```{stan npc_scaffold, echo = TRUE, output.var = "junk", eval = FALSE}
+The parsed macro code is inserted into the calling stan file in the appropriate program blocks.  For blocks that can contain both declarations and other statements, the macro is inserted after the last declaration.  If multiple macros are defined, they are inserted in the order they appear in the `use macros` block.
+
+**Parsing the macro in R:**
+```{r, eval = TRUE, echo = TRUE }
+# macros$macro_ncp_simple and 
+# scaffolds$scaffold_ncp_simple are filepaths 
+# to the above stan files
+out_file = tempfile(fileext = ".stan")
+ncp_simple = macroStan::parse_stan_macros(
+  input = scaffolds$scaffold_ncp_simple, 
+  output = out_file,
+  macro_files = list(ncp_simple = macros$macro_ncp_simple))
 ```
 
-There are two ways of inserting macros into a stan file: whole line replacement, which begins with a `$`, and in-line replacement, which uses the same `{{ }}` as the macro definitions.  To put them together, use `parse_stan_macros`.
-
-```{r, echo = TRUE, eval = TRUE, results = 'hide', message=FALSE} 
-output_file = tempfile(fileext = ".stan")
-# input_file corresponds to the above stan model
-parse_stan_macros(input = input_file, out_file = output_file,
-                  alpha_ncp = alpha_ncp)
+```{r, echo = FALSE, eval = TRUE} 
+knitr::read_chunk(out_file, labels = "out_ncp_simple")
+# import_stan_chunks(list(out_ncp_simple = out_file))
+```
+**Output:**
+```{stan out_ncp_simple, output.var = "junk", eval = FALSE}
 ```
 
-Which produces the following stan file:
-```{r, echo = FALSE, eval = TRUE}
-knitr::read_chunk(output_file, label = "ncp_out")
+## Example: Horseshoe prior
 
+As a more complicated example, here is the regularized horseshoe prior, adapted from the implementation in `brms`.
+
+**Macro:**
+```{stan macro_hs, output.var = "junk", eval = FALSE}
 ```
-```{stan ncp_out, echo = TRUE, output.var = "junk2", eval = FALSE}
-```
-
-## Example 2: Horseshoe priors
-
-Stan macros are intended for more complex code.  As an example, here is an adapted version of the horseshoe prior used in `brms`.
-
-```{r hs_macro, echo = TRUE, eval = TRUE}
+**Scaffold:**
+```{stan scaffold_hs, output.var = "m_ncp_s", eval = FALSE}
 ```
 
-`input_file_hs:`
-```{stan hs_scaffold, echo = TRUE, output.var = "junk3", eval = FALSE}
+Note that the macro was called with `value = beta`, and that `beta` is used in the model block to connect the assembled horseshoe prior coefficients to the linear predictor.
+
+**Parsing:**
+```{r, eval = TRUE, echo = TRUE }
+# once again, input and macro_files are paths that link to 
+# the above definitions
+out_file = tempfile(fileext = ".stan")
+horseshoe = macroStan::parse_stan_macros(
+  input = scaffolds$scaffold_hs, 
+  output = out_file,
+  macro_files = list(horseshoe = macros$macro_hs))
+```
+**Output:**
+```{r, echo = FALSE, eval = TRUE} 
+knitr::read_chunk(out_file, labels = "out_hs")
+# import_stan_chunks(list(out_ncp_simple = out_file))
+```
+```{stan out_hs, output.var = "junk", eval = FALSE}
 ```
 
-```{r, echo = TRUE, eval = TRUE, results = 'hide', message=FALSE}
-output_file_hs = tempfile(fileext = ".stan")
-parse_stan_macros(input_file_hs, output_file_hs, 
-                  hs_betas = stan_macro_horseshoe("1", "D"))
+## Multivariate Noncentered Parameterizations:
+
+This is a version of the multivariate NCP (see the [Stan User's Guide 21.7](https://mc-stan.org/docs/2_18/stan-users-guide/reparameterization-section.html) for more details).  In this example, we use two macros: The first defines coefficients:
+
+**Primary Macro:**
+```{stan macro_ncp, output.var = "junk", eval = FALSE}
 ```
 
-Output:
-```{r, echo = FALSE, eval = TRUE}
-knitr::read_chunk(output_file_hs, label = "hs_out")
+The second combines the coefficients with the data into a linear predictor.  
+**Helper Macro:**
+```{stan macro_ncp_lp, output.var = "junk", eval = FALSE}
+```
 
+The helper macro could easily be combined with the primary one (or used as an independent function in the scaffold), but it allowed for an easy way to demonstrate combining macros.
+
+**Scaffold:**
+```{stan scaffold_ncp, output.var = "m_ncp_s", eval = FALSE}
 ```
-```{stan hs_out, echo = TRUE, output.var = "junk4", eval = FALSE}
+
+Note that the `value` argument of the first macro is a different argument for the second macro.
+
+**Parsing:**
+```{r, eval = TRUE, echo = TRUE }
+# once again, input and macro_files are paths that link to 
+# the above definitions
+out_file = tempfile(fileext = ".stan")
+ncp_mv = macroStan::parse_stan_macros(
+  input = scaffolds$scaffold_ncp, 
+  output = out_file,
+  macro_files = list(ncp_mv = macros$macro_ncp,
+                     ncp_mv_linpred = macros$macro_ncp_lp))
 ```
+**Output:**
+```{r, echo = FALSE, eval = TRUE} 
+knitr::read_chunk(out_file, labels = "out_ncp_mv")
+# import_stan_chunks(list(out_ncp_simple = out_file))
+```
+
+```{stan out_ncp_mv, output.var = "junk", eval = FALSE}
+```
+
+## Horseshoe + NCP
+
+Finally, let's combine the horseshoe and the multivariate NCP together.  The macro files are already defined, but we need a new scaffold.
+
+
+**Scaffold:**
+```{stan scaffold_ncp_hs, output.var = "tmp", eval = FALSE}
+```
+
+**Parsing:**
+```{r, eval = TRUE, echo = TRUE }
+# once again, input and macro_files are paths that link to 
+# the above definitions
+out_file = tempfile(fileext = ".stan")
+ncp_mv_hs = macroStan::parse_stan_macros(
+  input = scaffolds$scaffold_ncp_hs, 
+  output = out_file,
+  macro_files = list(horseshoe = macros$macro_hs,
+                     ncp_mv = macros$macro_ncp,
+                     ncp_mv_linpred = macros$macro_ncp_lp))
+```
+**Output:**
+```{r, echo = FALSE, eval = TRUE} 
+knitr::read_chunk(out_file, labels = "out_ncp_hs")
+# import_stan_chunks(list(out_ncp_simple = out_file))
+```
+
+```{stan out_ncp_hs, output.var = "junk", eval = FALSE}
+```
+

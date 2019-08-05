@@ -5,7 +5,7 @@
 \title{alternate paramterization for `glue_data`, easier to lapply with}
 \usage{
 glue_args(what, args = list(), control = list(.open = "{{", .close =
-  "}}"), ..., .quote = FALSE)
+  "}}"), ...)
 }
 \arguments{
 \item{what}{scalar character string to `glue_data`}
@@ -15,8 +15,6 @@ glue_args(what, args = list(), control = list(.open = "{{", .close =
 \item{control}{a named list of control arguments for `glue_data`}
 
 \item{...}{additional data to be combined with `args`}
-
-\item{.quote}{logical, indicating whether `stan_macros` in `what` should quote their arguments}
 }
 \description{
 alternate paramterization for `glue_data`, easier to lapply with

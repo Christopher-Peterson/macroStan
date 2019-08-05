@@ -1,5 +1,5 @@
-test_file = "../../inst/macros/horseshoe.stan"
-test_scaffold = "../../inst/stan_scaffolds/horseshoe.stan"
+test_file = get_file("macros/horseshoe.stan")
+test_scaffold = get_file("stan_scaffolds/horseshoe.stan")
 
 block_names = c("functions", "data", "transformed data",
                 "parameters","transformed parameters",
@@ -181,9 +181,9 @@ test_that("parse_stan_macros works on horseshoe", {
 # Test with two macros
 test_that("parse_stan_macros works on mv_ncp", {
   macro_files = list(
-    ncp_mv = "../../inst/macros/ncp_mv.stan",
-    ncp_mv_linpred = "../../inst/macros/ncp_mv_linpred.stan")
-  scaffold = "../../inst/stan_scaffolds/ncp_mv.stan"
+    ncp_mv = get_file("macros/ncp_mv.stan"),
+    ncp_mv_linpred = get_file("macros/ncp_mv_linpred.stan"))
+  scaffold = get_file("stan_scaffolds/ncp_mv.stan")
 
   tst_out = tempfile(fileext = ".stan")
   out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
@@ -195,10 +195,10 @@ test_that("parse_stan_macros works on mv_ncp", {
 # Test with three macros
 test_that("parse_stan_macros works on mv_ncp and hs", {
   macro_files = list(
-    horseshoe = "../../inst/macros/horseshoe.stan",
-    ncp_mv = "../../inst/macros/ncp_mv.stan",
-    ncp_mv_linpred = "../../inst/macros/ncp_mv_linpred.stan")
-  scaffold = "../../inst/stan_scaffolds/ncp_mv_hs.stan"
+    horseshoe = get_file("macros/horseshoe.stan"),
+    ncp_mv = get_file("macros/ncp_mv.stan"),
+    ncp_mv_linpred = get_file("macros/ncp_mv_linpred.stan"))
+  scaffold = get_file("stan_scaffolds/ncp_mv_hs.stan")
 
   tst_out = tempfile(fileext = ".stan")
   out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
@@ -208,8 +208,8 @@ test_that("parse_stan_macros works on mv_ncp and hs", {
 
 test_that("ncp_simple works", {
   macro_files = list(
-    ncp_simple = "../../inst/macros/ncp_simple.stan")
-  scaffold = "../../inst/stan_scaffolds/ncp_simple.stan"
+    ncp_simple = get_file("macros/ncp_simple.stan"))
+  scaffold = get_file("stan_scaffolds/ncp_simple.stan")
   tst_out = tempfile(fileext = ".stan")
   out = parse_stan_macros(scaffold, tst_out, macro_files = macro_files, .validate_output = FALSE)
   expect_equal(tst_out, out)

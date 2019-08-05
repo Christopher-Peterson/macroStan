@@ -10,12 +10,12 @@ insert_macro_section = function(.scaffold, .macros, pos = NA) {
 }
 
 #' This should be a safe way of getting a macro's definition
-#' @param macro_name character vector
+#' @param macro_names character vector
 #' @param macro_list list of `stan_macro` objects
 macros_exist = function(macro_names, macro_list) {
   if(!all(macro_names %in% names(macro_list))) {
     missing_nms = macro_names[!macro_names %in% names(macro_list)]
-    stop(macro_name, " is not in list of available macros")
+    stop(missing_nms, " are not in list of available macros")
   }
   invisible(TRUE)
 }
@@ -101,6 +101,7 @@ order_stan_macros = function(blocks, macro_list = list()) {
   # check names
 }
 
+#' determine which function to use for inserting macros into blocks
 #' @param scaffold `stan_blocks` of scaffold
 #' @param block_names names of blocks to insert
 block_insert_functions = function(scaffold, block_names) {
@@ -141,6 +142,7 @@ insert_macros = function(scaffold_list, macro_blocks) {
   })
 }
 
+#' convert a block list into stan code; opposite of `get_blocks`
 #' @param block_list a `stan_blocks` object
 #' @return text of a stan file
 blocks_to_stan_string = function(block_list) {
@@ -171,7 +173,7 @@ verify_macro_list = function(macro_files, macro_list, ...) {
   all_macros
 }
 
-# Determines whether the input is a file or charcter vector of stan code
+#' Determines whether the input is a file or charcter vector of stan code
 #' @param input from parse_stan_macros
 get_input_code = function(input) {
   if(length(input) == 1 &&
@@ -187,7 +189,7 @@ get_input_code = function(input) {
 
 #' Applies macros to a stan file
 #' @param input stan code or file name
-#' @param output file name to output
+#' @param output_file file name to output
 #' @param macro_files named list of macro file names
 #' @param macro_list named list of macro definitions
 #' @param ... additional named macro definitions

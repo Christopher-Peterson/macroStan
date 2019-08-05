@@ -10,6 +10,8 @@ parse_stan_macros(input, output_file, macro_list = list(),
 \arguments{
 \item{input}{stan code or file name}
 
+\item{output_file}{file name to output}
+
 \item{macro_list}{named list of macro definitions}
 
 \item{macro_files}{named list of macro file names}
@@ -17,8 +19,6 @@ parse_stan_macros(input, output_file, macro_list = list(),
 \item{...}{additional named macro definitions}
 
 \item{.validate_output}{check to make sure output stan file is valid}
-
-\item{output}{file name to output}
 }
 \value{
 the parsed stan code if `out_file = NA`; otherwise `out_file`

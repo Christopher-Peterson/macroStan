@@ -1,17 +1,17 @@
 # Some utility functions for text manipulation
 
-#' collapses lines together
+# collapses lines together
 collapse_lines = function(x) {
   as.character(glue::glue_collapse(x, sep = "\n"))
 }
-#' replaces template with equivalent length whitespace
+# replaces template with equivalent length whitespace
 null_string = function(template, char_out = " ") {
   as.character(glue::glue_collapse(rep(char_out, nchar(template))))
 }
 
-#' this is used to find matched delimiters
-#' it returns the position of each right and left delim,
-#' in order.
+# this is used to find matched delimiters
+# it returns the position of each right and left delim,
+# in order.
 get_delim_tbl = function(x, .left = "{", .right = "}") {
   position_table = rbind(
     data.frame(pos = unlist(gregexpr(.left, x, fixed = TRUE )),
@@ -32,7 +32,7 @@ get_delim_tbl = function(x, .left = "{", .right = "}") {
   sorted
 }
 
-#' returns what's inside the first full pair of delimeters
+# returns what's inside the first full pair of delimeters
 get_delim_contents = function(x, .left = "{", .right = "}") {
   x = collapse_lines(x)
   sorted = get_delim_tbl(x, .left, .right)
@@ -51,7 +51,7 @@ get_all_delim_contents = function(x, .left, .right) {
   }, "chr")
 }
 
-#' returns x, but with the delim and its contents removed
+# returns x, but with the delim and its contents removed
 blank_delim_contents = function(x, .left = "{", .right = "}") {
   to_replace = paste0(.left,
                 get_all_delim_contents(x, .left, .right), .right)
@@ -60,8 +60,8 @@ blank_delim_contents = function(x, .left = "{", .right = "}") {
   }
   Reduce(nullify_string, to_replace, x)
 }
-#' a version of the function for Reduce()
-#' delims should be a length-2 character vector c(.left, .right)
+# a version of the function for Reduce()
+# delims should be a length-2 character vector c(.left, .right)
 blank_delims_red = function(x, .delims) {
   blank_delim_contents(x, .delims[1], .delims[2])
 }
@@ -83,8 +83,8 @@ separate_commas = function(x, delim_list =
 }
 
 
-#' this searches for left and right delimiters, but in a non-nested sense
-#' The next one it finds gets triggered
+# this searches for left and right delimiters, but in a non-nested sense
+# The next one it finds gets triggered
 extract_delim_linear = function(x, .left, .right) {
   if(length(x)!=1) stop("x must be length 1")
   left_side = as.numeric(regexpr(.left, x, fixed = TRUE))
@@ -106,10 +106,10 @@ extract_delim_linear = function(x, .left, .right) {
   out
 }
 
-#' This pulls out all text groups surrounded by the delims, from left to right
+# This pulls out all text groups surrounded by the delims, from left to right
 extract_all_delims_linear = function(x, .left, .right) {
   # browser()
-  if(is.list(x) && names(x) == c("out", "x")) {
+  if(is.list(x) && all(names(x) == c("out", "x"))) {
     .last_out = list(x$out)
     x = x$x
   } else {
@@ -131,9 +131,9 @@ extract_all_delims_linear = function(x, .left, .right) {
   out
 }
 
-#' This removes a number of delimiter-based sequences
-#' .lefts and .rights much match in length
-#' there are removed sequentially, by delimiter then from right to left
+# This removes a number of delimiter-based sequences
+# .lefts and .rights much match in length
+# there are removed sequentially, by delimiter then from right to left
 extract_sequence = function(x, .lefts = c("//", "/*"), .rights = c("\n", "*/")){
   if(length(.lefts) != length(.rights)) stop(".lefts and .rights must be the same length")
   reduce_fun = function(.last, .iter) {
@@ -173,8 +173,6 @@ get_line_of_tag = function(x, tag, fixed = TRUE, ...){
 #' @param args a list of data for `glue_data`
 #' @param control a named list of control arguments for `glue_data`
 #' @param ... additional data to be combined with `args`
-#' @param .quote logical, indicating whether `stan_macros` in `what` should quote their arguments
-#' @export
 glue_args = function(what, args = list(),
                      control = list(.open = "{{", .close = "}}"), ...) {
   # browser()

@@ -11,6 +11,8 @@ read_macro(file, macro_code = readLines(file),
 \item{file}{file name to read in; ignored if `macro_code` is used}
 
 \item{macro_code}{text representation of the macro;}
+
+\item{.glue_control}{list of control arguments to pass to `glue::glue_data`}
 }
 \value{
 a stan_macro object, which is a function that returns parsed macro code

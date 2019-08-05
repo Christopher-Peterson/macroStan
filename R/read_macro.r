@@ -14,13 +14,14 @@ parse_macro_block = function(blocks, .def_side = c("rhs", "lhs"),
   parse_assignments(call_txt, .def_side = .def_side)
 }
 
-#' #' extracts the arguments from a macro args block
-#' #' @param blocks a macro file parsed with `get_blocks`
-#' #' @return a list of language objects, one per argument
+#' extracts the arguments from a macro args block
+#' @param blocks a macro file parsed with `get_blocks`
+#' @return a list of language objects, one per argument
 get_macro_args = function(blocks) {
   parse_macro_block(blocks, "lhs", "macro args")
 }
 
+#' gets the names of parsed macro arguments
 #' @param .args list of language objects returned by `get_macro_args`
 #' @return a character vector of argument names
 get_arg_names = function(.args) {
@@ -37,6 +38,9 @@ get_arg_names = function(.args) {
 
 #' checks to make sure that only defined arguments are used for splicing in a macro
 #' @param blocks a macro file parsed with `get_blocks`
+#' @param args output from `get_macro_args()`
+#' @param .left left bracket for argument tags
+#' @param .right right bracket for argument tags
 #' @return `invisible(blocks)`, if valid; otherwise throws an error`
 validate_macro_args =
   function(blocks, args, .left = "{|", .right = "|}") {
@@ -54,6 +58,7 @@ validate_macro_args =
   invisible(blocks)
 }
 
+#' parse the arguments for the R representation of a macro
 #' @param .args list of language objects returned by `get_macro_args`
 #' @return formals for a new function
 parse_macro_formals = function(.args) {
@@ -65,12 +70,14 @@ parse_macro_formals = function(.args) {
 }
 
 #' Read in a macro file
+#'
 #' @param file file name to read in; ignored if `macro_code` is used
 #' @param macro_code text representation of the macro;
+#' @param .glue_control list of control arguments to pass to `glue::glue_data`
 #' @return a stan_macro object, which is a function that returns parsed macro code
 #' @export
-read_macro = function(file, macro_code = readLines(file), .glue_control =
-                        list(.open = "{|", .close = "|}")) {
+read_macro = function(file, macro_code = readLines(file),
+                      .glue_control = list(.open = "{|", .close = "|}")) {
   macro_blocks = get_blocks(macro_code)
   # browser()
   args = get_macro_args(macro_blocks)
@@ -108,21 +115,42 @@ read_macro = function(file, macro_code = readLines(file), .glue_control =
   out
 }
 
-#' returns logical
+# returns logical
 is_stan_macro = function(x) {
   "stan_macro" %in% class(x) && rlang::is_function(x)
 }
 
+#' Stan macro generic functions
+#'
+#' @param x stan_macro object
+#' @param object stan_macro object
+#' @param ... additional arguments passed to or from other methods
+#' @name stan_macro_generics
+NULL
+
+#' @rdname stan_macro_generics
 #' @export
-summary.stan_macro = function(x, ...) {
-  environment(x)$sections
+as.list.stan_macro = function(x, ...) {
+  x = environment(x)$sections
+  NextMethod(x)
 }
+
+#' @rdname stan_macro_generics
+#' @export
+summary.stan_macro = function(object, ...) {
+  object = as.list(object)
+  NextMethod(object)
+}
+
+#' @rdname stan_macro_generics
 #' @export
 print.stan_macro = function(x, ...) {
   cat("Stan Macro:\n")
-  print(summary(x))
+  x = as.list(x)
+  NextMethod(x)
 }
 
+#' reads in a list of macro files
 #' @param macro_files a list of file names, corresponding to macros
 get_macro_file_list = function(macro_files) {
   # check names
@@ -134,3 +162,4 @@ get_macro_file_list = function(macro_files) {
   }
   lapply(macro_files, read_macro)
 }
+

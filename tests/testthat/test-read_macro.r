@@ -46,7 +46,7 @@ test_that("parse_macro_formals works",{
                    alist(a=, b="1", c="foo"))
 })
 
-test_file = "../../inst/macros/horseshoe.stan"
+test_file = get_file("macros/horseshoe.stan")
 # test_file = "inst/macros/horseshoe.stan"
 
 test_that("read_macro creates an object of the correct class",{

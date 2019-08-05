@@ -14,18 +14,18 @@ block_size = function(x) {
   nchar(x) + 1
 }
 
-#' removes commented parts of a stan block, replacing with the same amount of white space
+# removes commented parts of a stan block, replacing with the same amount of white space
 remove_comments = function(x) {
   # append a final "\n" to x before using, so that final line comments will terminate
   extract_sequence(x, .lefts = c("//", "/*" ),
                    .rights = c("\n", "*/"))$x
 }
 
-#' this detects any internal blocks (beginning with "{")
-#' and removes the rest of the vector.  I could write a more
-#' sophisticated version of this that actually detects and
-#' removes just the block, but that isn't necessary for figuring out
-#' where the declarations end.
+# this detects any internal blocks (beginning with "{")
+# and removes the rest of the vector.  I could write a more
+# sophisticated version of this that actually detects and
+# removes just the block, but that isn't necessary for figuring out
+# where the declarations end.
 remove_internal_blocks = function(x, delim = "{|") {
   # browser()
   # Removes left delim, to avoid bracket confusion
@@ -41,8 +41,8 @@ remove_internal_blocks = function(x, delim = "{|") {
 }
 
 
-#' parse a stan file and pull out the corresponding block
-#' note that two extra block names are here
+# parse a stan file and pull out the corresponding block
+# note that two extra block names are here
 find_block = function(x, block = list_block_names(.macro = TRUE), ...) {
   block = match.arg(block)
   x = as.character(x)
@@ -54,8 +54,8 @@ find_block = function(x, block = list_block_names(.macro = TRUE), ...) {
   if(!any(start_pos)) return("")
   get_delim_contents(x[seq(which(start_pos)[1], length(x), by = 1)])
 }
-#' determine where declarations inside a block end;
-#' returns the character position immediately after declarations
+# determine where declarations inside a block end;
+# returns the character position immediately after declarations
 post_declaration_position = function(x, .left = "{|") {
   if(is.null(x) || x == "") return (1)
   # Returns an iteger of the first character position after declarations end
@@ -94,6 +94,8 @@ separate_declarations = function(x) {
   out
 }
 
+#' transforms a stan file into list with named elements corresponding to the program block
+#' @param x stan code
 get_blocks = function(x) {
   block_list = list_block_names(TRUE)
   separated_blocks = remove_empty_strings(

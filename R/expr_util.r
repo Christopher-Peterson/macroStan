@@ -23,7 +23,7 @@ assignment_rhs = function(arg_expr) {
   }
 }
 
-#' takes an unevaluated function call, and converts all args to character vectors
+# takes an unevaluated function call, and converts all args to character vectors
 args_as_char = function(.call) {
   if(is_assignment(.call)) {
     out = assignment_rhs(.call)
@@ -47,6 +47,9 @@ null_expr = function(x) {
   out[[2]] = x
   out
 }
+
+#Document these:
+
 make_missing_arg = function(x) {
   if(is.language(x)) x = as.character(x)
   setNames(as.list(rlang::parse_expr("alist(a =)"))[2], x)
@@ -67,11 +70,8 @@ assignments_to_arg = function(.l) {
   do.call(c, out)
 }
 
-
-
-
-  # Wrap the rhs of an asignment in quotes
-#' @param text of an assignment
+#' parse a text assignment, quoting what needs to be quoted
+#' @param x text of an assignment
 #' @param .def_side if there's no assignment, what should it be treated as?
 parse_assignment = function(x, .def_side) {
   # browser()
@@ -93,24 +93,16 @@ parse_assignment = function(x, .def_side) {
   rlang::parse_expr(out)
 }
 
-# Some stan code won't parse to R.  The only time that it's needed
-# is when figuring out assignments
-# This tries to parse to R; if it fails, it wraps the lhs in quotes
-# and parses that
-#' @param x text of an assignment to be parsed
+#' Some stan code won't parse to R.  The only time that it's needed
+#' is when figuring out assignments
+#' This tries to parse to R; if it fails, it wraps the lhs in quotes
+#' and parses that
+#' @param x_lst text of an assignment to be parsed
 #' @param .def_side if there's no assignment, what should it be treated as?
 parse_assignments = function(x_lst, .def_side = c("lhs", "rhs")){
   .def_side = match.arg(.def_side)
   lapply(x_lst, parse_assignment, .def_side = .def_side)
 }
 
-# parse_assignment = function(x, .def_side = c("lhs", "rhs")) {
-#   .def_side = match.arg(.def_side)
-#   tryCatch(rlang::parse_expr(x),
-#            error = function(e) rlang::parse_expr(
-#              quote_assignment_txt(x, .def_side)),
-#            interrupt = function(e)
-#              stop("Terminated by user", call. = FALSE))
-# }
 
 

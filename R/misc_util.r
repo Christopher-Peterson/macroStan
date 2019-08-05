@@ -3,8 +3,9 @@
 # they should not be used outside of inside these functions,
 # because they haven't been nearly as thoroughly tested
 
-#' return the index of the first element of x_lgl that is TRUE
-#' returns empty vector if none apply
+
+# return the index of the first element of x_lgl that is TRUE
+# returns empty vector if none apply
 nth = function(x_lgl, n = 1) {
   if(sum(x_lgl) < n) return(integer(0))
   sort(which(x_lgl))[n]
@@ -21,7 +22,7 @@ sort_by = function(.df, .expr, .desc = FALSE) {
   .df[order(the_vec),]
 }
 
-# Basically dplyr::filter with one condition
+#' Basically dplyr::filter with one condition
 #' @param .df a data frame
 #' @param .cond a logical statement about .df
 filter_rows = function(.df, .cond) {
@@ -30,3 +31,17 @@ filter_rows = function(.df, .cond) {
   .df = .df[cond, ]
   .df
 }
+
+  # Used to find files in different testing environments
+get_file = function(x) {
+  current_dir = getwd()
+  if(grepl("check", current_dir, fixed = TRUE)) {
+    # R CMD CHECK
+    out = system.file(x, package = "macroStan")
+  } else if(grepl("testthat", current_dir, fixed = TRUE)) {
+    # RStudio automated testthat
+    out = file.path("../../inst", x)
+  } else out = file.path("inst",x)
+  out
+}
+

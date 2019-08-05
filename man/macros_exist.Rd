@@ -7,9 +7,9 @@
 macros_exist(macro_names, macro_list)
 }
 \arguments{
-\item{macro_list}{list of `stan_macro` objects}
+\item{macro_names}{character vector}
 
-\item{macro_name}{character vector}
+\item{macro_list}{list of `stan_macro` objects}
 }
 \description{
 This should be a safe way of getting a macro's definition
